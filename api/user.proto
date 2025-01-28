@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+// protoc --go_out=./pkg --go-grpc_out=./pkg api/user.proto
+option go_package = "./user";
+
+service UserService {
+
+  rpc CreateUser(CreateUserIn) returns (CreateUserOut) {};
+ 
+}
+message CreateUserIn  {
+  string username = 1;
+}
+
+message CreateUserOut {
+    bool success = 1;
+}
+
