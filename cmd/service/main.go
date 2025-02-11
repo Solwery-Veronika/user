@@ -4,13 +4,17 @@ import (
 	"log"
 	"net"
 
+	"github.com/Solwery-Veronika/user/internal/repository"
 	"github.com/Solwery-Veronika/user/internal/service"
+
 	"github.com/Solwery-Veronika/user/pkg/user"
 	"google.golang.org/grpc"
 )
 
 func main() {
-	srv := service.New()
+	repo := repository.New()
+
+	srv := service.New(repo)
 
 	grpcServer := grpc.NewServer()
 
