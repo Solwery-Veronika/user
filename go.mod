@@ -3,6 +3,7 @@ module github.com/Solwery-Veronika/user
 go 1.23.4
 
 require (
+	github.com/jmoiron/sqlx v1.4.0 // indirect
 	golang.org/x/net v0.30.0 // indirect
 	golang.org/x/sys v0.26.0 // indirect
 	golang.org/x/text v0.19.0 // indirect
