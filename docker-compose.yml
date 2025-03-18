@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  user-db: 
+    container_name: user-db
+    image: postgres:15
+    environment: 
+      POSTGRES_USER: master
+      POSTGRES_PASSWORD: master
+      POSTGRES_DB: master
+    ports:
+      - "3115:5432"
+    volumes:
+      - user_db_data_veronika:/var/lib/postgresql/data
+
+volumes:
+  user_db_data_veronika:
+

@@ -6,13 +6,12 @@ import (
 
 	"github.com/Solwery-Veronika/user/internal/repository"
 	"github.com/Solwery-Veronika/user/internal/service"
-
 	"github.com/Solwery-Veronika/user/pkg/user"
 	"google.golang.org/grpc"
 )
 
 func main() {
-	repo := repository.New()
+	repo := repository.NewRepository()
 
 	srv := service.New(repo)
 
