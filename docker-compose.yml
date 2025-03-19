@@ -12,7 +12,10 @@ services:
       - "3115:5432"
     volumes:
       - user_db_data_veronika:/var/lib/postgresql/data
-
+    networks:
+      - veronika-network
 volumes:
   user_db_data_veronika:
-
+networks:
+    veronika-network:
+      external: true
