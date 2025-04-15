@@ -29,21 +29,29 @@ func NewRepository(cfg *config.Config) *Repository {
 	return &Repository{conn: conn}
 }
 
-func (r *Repository) CreateUser(ctx context.Context, username string) error {
+func (r *Repository) isUserExists(ctx context.Context, username string) (bool, error) {
 	query := `SELECT true FROM participants WHERE username = $1`
 
 	var exists bool
 
 	err := r.conn.GetContext(ctx, &exists, query, username)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return fmt.Errorf("failed to get user: %w", err)
+		return false, fmt.Errorf("failed to get user: %w", err)
+	}
+	return exists, nil
+}
+
+func (r *Repository) CreateUser(ctx context.Context, username string) error {
+	exists, err := r.isUserExists(ctx, username)
+	if err != nil {
+		return err
 	}
 
 	if exists {
 		return ErrUserExists
 	}
 
-	query = `INSERT INTO participants (username) 
+	query := `INSERT INTO participants (username) 
 	          VALUES ($1)` // запрос
 
 	_, err = r.conn.ExecContext(ctx, query, username)
