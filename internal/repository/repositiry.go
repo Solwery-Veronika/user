@@ -2,23 +2,61 @@ package repository
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
+	"log"
+
+	"github.com/Solwery-Veronika/user/internal/config"
+	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
 )
 
+var ErrUserExists = errors.New("user already exists")
+
 type Repository struct {
-	dataMap map[string]string
+	conn *sqlx.DB
 }
 
-func New() *Repository {
-	return &Repository{
-		dataMap: make(map[string]string),
+func NewRepository(cfg *config.Config) *Repository {
+	connectCmd := fmt.Sprintf("user=%s password=%s dbname=%s host=%s port=%s sslmode=disable",
+		cfg.Postgres.User, cfg.Postgres.Password, cfg.Postgres.Database, cfg.Postgres.Host, cfg.Postgres.Port)
+
+	conn, err := sqlx.Connect("postgres", connectCmd)
+	if err != nil {
+		log.Fatal(err)
 	}
+	return &Repository{conn: conn}
+}
+
+func (r *Repository) isUserExists(ctx context.Context, username string) (bool, error) {
+	query := `SELECT true FROM participants WHERE username = $1`
+
+	var exists bool
+
+	err := r.conn.GetContext(ctx, &exists, query, username)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return false, fmt.Errorf("failed to get user: %w", err)
+	}
+	return exists, nil
 }
 
 func (r *Repository) CreateUser(ctx context.Context, username string) error {
-	_, ok := r.dataMap[username] // проверяем есть ли имя в мапе
-	if ok {
-		return fmt.Errorf("username %s already exists")
+	exists, err := r.isUserExists(ctx, username)
+	if err != nil {
+		return err
+	}
+
+	if exists {
+		return ErrUserExists
+	}
+
+	query := `INSERT INTO participants (username) 
+	          VALUES ($1)` // запрос
+
+	_, err = r.conn.ExecContext(ctx, query, username)
+	if err != nil {
+		return fmt.Errorf("failed to insert new user: %w", err)
 	}
 	return nil
 }
